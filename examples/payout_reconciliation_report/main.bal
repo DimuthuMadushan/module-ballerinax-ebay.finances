@@ -17,6 +17,9 @@ public function main() returns error? {
     });
 
     finances:Payouts|error? payoutsResult = ebay->listPayouts({xEBAYCMARKETPLACEID: marketplaceId}, {'limit: payoutCount});
+    if payoutsResult is error {
+        return payoutsResult;
+    }
     if payoutsResult !is finances:Payouts {
         return error("No payouts were returned for marketplace " + marketplaceId);
     }
@@ -25,23 +28,38 @@ public function main() returns error? {
         finances:Payout payout = check ebay->getPayout(summary.payoutId, {xEBAYCMARKETPLACEID: marketplaceId});
         io:println(string `Payout ${payout.payoutId} (${payout.payoutStatus}) on ${payout.payoutDate}: ${payout.amount.value} ${payout.amount.currency}`);
 
-        finances:Transactions|error? txResult = ebay->listTransactions({xEBAYCMARKETPLACEID: marketplaceId},
-            {filter: [string `payoutId:{${payout.payoutId}}`], 'limit: 200});
-        if txResult !is finances:Transactions {
+        int offset = 0;
+        int pageSize = 200;
+        int count = 0;
+        decimal credits = 0d;
+        decimal debits = 0d;
+        while true {
+            finances:Transactions|error? txResult = ebay->listTransactions({xEBAYCMARKETPLACEID: marketplaceId},
+                {filter: [string `payoutId:{${payout.payoutId}}`], 'limit: pageSize, offset});
+            if txResult is error {
+                return txResult;
+            }
+            if txResult !is finances:Transactions {
+                break;
+            }
+            foreach finances:Transaction tx in txResult.transactions {
+                decimal value = check decimal:fromString(tx.amount.value);
+                if tx.bookingEntry == "CREDIT" {
+                    credits += value;
+                } else {
+                    debits += value;
+                }
+            }
+            count += txResult.transactions.length();
+            if txResult.transactions.length() < pageSize {
+                break;
+            }
+            offset += pageSize;
+        }
+        if count == 0 {
             io:println("  No transactions found for this payout");
             continue;
         }
-
-        decimal credits = 0d;
-        decimal debits = 0d;
-        foreach finances:Transaction tx in txResult.transactions {
-            decimal value = check decimal:fromString(tx.amount.value);
-            if tx.bookingEntry == "CREDIT" {
-                credits += value;
-            } else {
-                debits += value;
-            }
-        }
-        io:println(string `  ${txResult.transactions.length()} of ${txResult.total} transactions: credits ${credits}, debits ${debits}`);
+        io:println(string `  ${count} transactions: credits ${credits}, debits ${debits}`);
     }
 }

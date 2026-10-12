@@ -18,6 +18,9 @@ public function main() returns error? {
     });
 
     finances:SellerFundsSummaryResponse|error? funds = ebay->getSellerFundsSummary({xEBAYCMARKETPLACEID: marketplaceId});
+    if funds is error {
+        return funds;
+    }
     if funds !is finances:SellerFundsSummaryResponse {
         return error("The seller funds summary is not available for this account");
     }
@@ -34,7 +37,7 @@ public function main() returns error? {
     map<decimal> byFeeType = {};
     while true {
         finances:BillingActivityResponse page = check ebay->listBillingActivities({}, {
-            filter: string `billingTransactionDate:${dateRange}`,
+            filter: string `transactionDate:${dateRange}`,
             'limit: pageSize.toString(),
             offset: offset.toString()
         });

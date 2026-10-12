@@ -48,7 +48,7 @@ isolated function testGetTransactionSummary() returns error? {
 
 @test:Config {groups: ["live_tests", "mock_tests"]}
 isolated function testListBillingActivities() returns error? {
-    BillingActivityResponse response = check ebay->listBillingActivities({}, {filter: "billingTransactionDate:[2026-03-01T00:00:00.000Z..2026-03-31T00:00:00.000Z]"});
+    BillingActivityResponse response = check ebay->listBillingActivities({}, {filter: "transactionDate:[2026-03-01T00:00:00.000Z..2026-03-31T00:00:00.000Z]"});
     test:assertTrue(response.billingActivities.length() > 0);
 }
 
