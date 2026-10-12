@@ -2,13 +2,21 @@
 
 The `ballerinax/ebay.finances` connector provides practical examples illustrating usage in various scenarios.
 
-[//]: # (TODO: Add examples)
-1. 
-2. 
+1. [Payout reconciliation report](./payout_reconciliation_report/payout_reconciliation_report.md) - Lists recent payouts and totals the credits and debits of the transactions behind each one.
+2. [Seller fee audit](./seller_fee_audit/seller_fee_audit.md) - Combines the funds summary, a transaction summary and the billing activity for a date range to show where fees went.
 
 ## Prerequisites
 
-[//]: # (TODO: Add prerequisites)
+1. Generate eBay application keys and a user refresh token with the `https://api.ebay.com/oauth/api_scope/sell.finances` scope, as described in the [setup guide](https://github.com/ballerina-platform/module-ballerinax-ebay.finances/blob/main/ballerina/README.md#setup-guide).
+
+2. For each example, create a `Config.toml` file with the related configuration. Here's an example of how your `Config.toml` file should look:
+
+    ```toml
+    clientId = "<Client ID>"
+    clientSecret = "<Client Secret>"
+    refreshToken = "<Refresh Token>"
+    refreshUrl = "https://api.ebay.com/identity/v1/oauth2/token"
+    ```
 
 ## Running an example
 
